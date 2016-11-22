@@ -4,13 +4,15 @@ import pong
 
 # Number of frames per second
 # Change this value to speed up or slow down your game
-FPS = 50
+FPS = 200
 
 #Global Variables to be used through our program
 WINDOWWIDTH = 12*50
 WINDOWHEIGHT = 12*50
 LINETHICKNESS = 10
 PADDLESIZE = 0.2*WINDOWHEIGHT
+BASICFONTSIZE = 20
+
 
 # Set up the colours
 BLACK     = (0  ,0  ,0  )
@@ -41,6 +43,12 @@ def movePaddle(paddle, newx, newy):
     paddle.y = newy
     return paddle
 
+def displayInfo(t, max_bounces):
+    resultSurf = BASICFONT.render('Time = %ss, Max = %s' %(t, max_bounces), True, WHITE)
+    resultRect = resultSurf.get_rect()
+    resultRect.topleft = (5, 5)
+    DISPLAYSURF.blit(resultSurf, resultRect)
+
 #Main function
 def main():
     # initialize Q,N_sa values to 0, access by [ball_x][ball_y][v_x][v_y][paddle_y][action], indexes are discretized
@@ -57,10 +65,13 @@ def main():
 
     # simulate the env at each time step
     t = 0
-
+    on_paddle = 0   # number of consecutive on paddle bounces
+    max_bounces = 0 # max number of consec paddle bounces so far
 
     pygame.init()
     global DISPLAYSURF
+    global BASICFONT
+    BASICFONT = pygame.font.Font('FreeSansBold.ttf', BASICFONTSIZE)
 
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH,WINDOWHEIGHT)) 
@@ -91,6 +102,7 @@ def main():
  
         drawPaddle(paddle1)
         drawBall(ball)        
+        displayInfo(t, max_bounces)
 
         paddle1 = movePaddle(paddle1, WINDOWWIDTH - LINETHICKNESS, playerOnePosition)
         ball = moveBall(ball, ballX, ballY)
@@ -104,8 +116,12 @@ def main():
         cs[4] += a
 
         # bounce if possible
+        max_bounces = max(max_bounces, on_paddle)
         if pong.bounce(cs)==1:
             cr += 1
+            on_paddle += 1
+        else:               # clear on_paddle
+            on_paddle = 0
 
         # do a terminal + reward check
         if pong.terminal(cs):
@@ -117,9 +133,11 @@ def main():
         # do q-learning
         r, a = pong.Q_learning_agent(cs, cr, Q, N_sa, s, a, r)
 
-        print cr, r
-        print cs, s
-        print a
+        # print stuffs here
+        #print cr, r
+        #print cs, s
+        #print a
+        #print Q
         t += 1
 
 
@@ -127,26 +145,3 @@ def main():
 if __name__=='__main__':
     main()
 
-'''
-        irint 
-        cs[0] += cs[2]
-        cs[1] += cs[3]
-
-        # bounce if possible
-        if pong.bounce(cs)==1:
-            cr += 1
-
-        # do a terminal + reward check
-        if pong.terminal(cs):
-            cr -= 1
-            cs = [0.5, 0.5, 0.03, 0.01, 0.4]
-            s = [0.5, 0.5, 0.03, 0.01, 0.4]
-            #break
-
-        # do q-learning
-        if pong.Q_learning_agent(cs, cr, Q, N_sa, s, a, r):
-            break
-        print s
-
-        t += 1
-'''
