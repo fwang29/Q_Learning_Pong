@@ -30,6 +30,7 @@ def terminal(s):
         return True
     return False
 
+
 def discretize_s(s):
     sd = [0 for i in range(5)]
     sd[BX] = int(12*s[BX])
@@ -60,19 +61,22 @@ def exploration(u, n):
 def bounce(s):      # s accessed by [ball_x][ball_y][v_x][v_y][paddle_y][action]
     # If ball_y < 0 (the ball is off the top of the screen), assign ball_y = -ball_y and velocity_y = -velocity_y.
     if s[BY] < 0:
+        print "bounce down"
         s[BY] = -s[BY]
         s[VY] = -s[VY]
     # If ball_y > 1 (the ball is off the bottom of the screen), let ball_y = 2 - ball_y and velocity_y = -velocity_y.
     if s[BY] > 1:
+        print "bounce up"
         s[BY] = 2-s[BY]
         s[VY] = -s[VY]
     # If ball_x < 0 (the ball is off the left edge of the screen), assign ball_x = -ball_x and velocity_x = -velocity_x.
     if s[BX] < 0:
+        print "bounce to right"
         s[BX] = -s[BX]
         s[VX] = -s[VX]
     # If ball can bounce on paddle
     if (s[BX] >= paddle_x) and (s[BY]>=s[PY]) and (s[BY]<=s[PY]+paddle_height):
-        print "on paddle!"
+        print "bounce on paddle!"
         s[BX] = 2*paddle_x - s[BX]
         # this loop makes sure |vx| > 0.03
         while True:
@@ -81,6 +85,8 @@ def bounce(s):      # s accessed by [ball_x][ball_y][v_x][v_y][paddle_y][action]
                 s[VX] = new_vx
                 s[VY] = s[VY] + np.random.uniform(-0.03,0.03)
                 break
+        return 1
+    return 0
 
 
 def Q_learning_agent(cs, cr, Q, N_sa, s, a, r):
@@ -139,15 +145,15 @@ if __name__ == '__main__':
         cs[1] += cs[3]
 
         # bounce if possible
-        print "before bounce"
-        print cs
-        bounce(cs)
-        print "after bounce"
-        print cs
+        if bounce(cs)==1:
+            cr += 1
 
-        # ?? do a terminal check
+        # do a terminal + reward check
         if terminal(cs):
-            break
+            cr -= 1
+            cs = [0.5, 0.5, 0.03, 0.01, 0.4]
+            s = [0.5, 0.5, 0.03, 0.01, 0.4]
+            #break
 
         # do q-learning
         if Q_learning_agent(cs, cr, Q, N_sa, s, a, r):
