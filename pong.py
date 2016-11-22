@@ -22,9 +22,6 @@ R_plus = 100        # an optimistic estimate of the best possible reward in any 
 
 def terminal(s):
     off_paddle = (s[BY]<s[PY]) or (s[BY]>s[PY]+paddle_height)
-    print s[BX]
-    print paddle_x
-    print s[BX] > paddle_x
     if (s[BX] > paddle_x) and off_paddle:    # ball_x > 1 and ball_y < paddle_y or ball_y > paddle_y+paddle_height
         print "terminal!"
         return True
@@ -98,16 +95,14 @@ def Q_learning_agent(cs, cr, Q, N_sa, s, a, r):
     @param s, a, r: the previous state, action, and reward, initially null
     """
     if terminal(s):
-        print "terminal!"
         Q[s0][s1][s2][s3][s4][0] = cr
-        return True
+        return -1
 
     alpha = 1
     gamma = 1
     actions = [0,+0.04,-0.04]
     dcs = discretize_s(cs)
     cs0, cs1, cs2, cs3, cs4 = dcs
-    print dcs
     Q_cs = Q[cs0][cs1][cs2][cs3][cs4]   # an array of action vals resulted from three actions
     N_sa_cs = N_sa[cs0][cs1][cs2][cs3][cs4]  # an array of frequencies resulted from three actions
     ds = discretize_s(s)
@@ -117,11 +112,12 @@ def Q_learning_agent(cs, cr, Q, N_sa, s, a, r):
         N_sa[s0][s1][s2][s3][s4][s5] += 1
         max_ca = actions[Q_cs.index(max(Q_cs))] 
         Q[s0][s1][s2][s3][s4][s5] += alpha*N_sa[s0][s1][s2][s3][s4][s5]*(r + gamma*max_ca - Q[s0][s1][s2][s3][s4][s5])
-        s = list(cs)
+        for si in range(5):
+            s[si] = cs[si]
         explorations = [exploration(Q_cs[i], N_sa_cs[i]) for i in range(3)]
         a = actions[explorations.index(max(explorations))]    # argmax a' f(Q[s',a'], N_sa[s',a'])
-        r = cr
-    return False
+        #r = cr
+    return cr, a
 
 
 if __name__ == '__main__':
@@ -143,6 +139,7 @@ if __name__ == '__main__':
         # increment ball_x by v_x and ball_y by v_y
         cs[0] += cs[2]
         cs[1] += cs[3]
+        cs[4] += a
 
         # bounce if possible
         if bounce(cs)==1:
@@ -156,7 +153,7 @@ if __name__ == '__main__':
             #break
 
         # do q-learning
-        if Q_learning_agent(cs, cr, Q, N_sa, s, a, r):
-            break
+        r, a = Q_learning_agent(cs, cr, Q, N_sa, s, a, r)
+        
 
         t += 1
