@@ -43,8 +43,8 @@ def movePaddle(paddle, newx, newy):
     paddle.y = newy
     return paddle
 
-def displayInfo(t, max_bounces):
-    resultSurf = BASICFONT.render('Time = %ss, Max = %s' %(t, max_bounces), True, WHITE)
+def displayInfo(t, max_bounces, cr):
+    resultSurf = BASICFONT.render('Time = %ss, Max = %s, Reward = %s' %(t, max_bounces, cr), True, WHITE)
     resultRect = resultSurf.get_rect()
     resultRect.topleft = (5, 5)
     DISPLAYSURF.blit(resultSurf, resultRect)
@@ -102,7 +102,7 @@ def main():
  
         drawPaddle(paddle1)
         drawBall(ball)        
-        displayInfo(t, max_bounces)
+        displayInfo(t, max_bounces, cr)
 
         paddle1 = movePaddle(paddle1, WINDOWWIDTH - LINETHICKNESS, playerOnePosition)
         ball = moveBall(ball, ballX, ballY)
@@ -125,7 +125,10 @@ def main():
 
         # do a terminal + reward check
         if pong.terminal(cs):
-            cr -= 1
+            ds = pong.discretize_s(s)
+            s0, s1, s2, s3, s4 = ds
+            Q[s0][s1][s2][s3][s4][0] = cr
+            cr = 0
             cs = [0.5, 0.5, 0.03, 0.01, 0.4]
             s = [0.5, 0.5, 0.03, 0.01, 0.4]
             #break
@@ -137,7 +140,8 @@ def main():
         #print cr, r
         #print cs, s
         #print a
-        #print Q
+        if t%100 == 0:
+            print Q
         t += 1
 
 

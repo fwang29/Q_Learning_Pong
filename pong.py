@@ -17,7 +17,7 @@ PY = 4
 paddle_height = 0.2
 paddle_x = 1
 ############ below are parameters to tune ######################
-Ne = 30             # the min times the agent has to try each action-state pair
+Ne = 10             # the min times the agent has to try each action-state pair
 R_plus = 100        # an optimistic estimate of the best possible reward in any state 
 C = 1               # the constant which dets learning rate alpha = C/(C+N(s,a))
 gamma = 0.5         # discount factor
@@ -97,9 +97,9 @@ def Q_learning_agent(cs, cr, Q, N_sa, s, a, r):
     @param N_sa: a table of frequencies for state-action pairs, initially 0s
     @param s, a, r: the previous state, action, and reward, initially null
     """
+
     #if terminal(s):
         #Q[s0][s1][s2][s3][s4][0] = cr
-        #return -1
 
 
     # params which start with d means discritized 
@@ -107,17 +107,20 @@ def Q_learning_agent(cs, cr, Q, N_sa, s, a, r):
 
     dcs = discretize_s(cs)
     cs0, cs1, cs2, cs3, cs4 = dcs
+    print dcs
     Q_cs = Q[cs0][cs1][cs2][cs3][cs4]   # an array of action vals resulted from three actions
     N_sa_cs = N_sa[cs0][cs1][cs2][cs3][cs4]  # an array of frequencies resulted from three actions
 
     ds = discretize_s(s)
     s0, s1, s2, s3, s4 = ds
+
     s5 = discretize_a(a)
 
     alpha = C/(C+N_sa[s0][s1][s2][s3][s4][s5])
 
     if s != None:
         N_sa[s0][s1][s2][s3][s4][s5] += 1
+        #print N_sa
         max_ca = actions[Q_cs.index(max(Q_cs))] 
         Q[s0][s1][s2][s3][s4][s5] += alpha*N_sa[s0][s1][s2][s3][s4][s5]*(r + gamma*max_ca - Q[s0][s1][s2][s3][s4][s5])
         for si in range(5):
