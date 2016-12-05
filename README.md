@@ -1,7 +1,7 @@
 # Q_Learning_Pong
 Pong implemented by Q-Learning
 
-2 pickle files are models already trained with 100K games. average
+2 pickle files are models already trained with 100K games, with current parameter. average
 rebound 9 times.
 
 Use game.py for all testing.(Because it’s fast). Set up as training
