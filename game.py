@@ -120,8 +120,6 @@ def main():
         if pong.bounce(cs)==1:
             cr += 1
             on_paddle += 1
-        else:               # clear on_paddle
-            on_paddle = 0
 
         # do a terminal + reward check
         if pong.terminal(cs):
@@ -131,7 +129,7 @@ def main():
             cr = 0
             cs = [0.5, 0.5, 0.03, 0.01, 0.4]
             s = [0.5, 0.5, 0.03, 0.01, 0.4]
-            #break
+            on_paddle = 0       # clear on_paddle
 
         # do q-learning
         r, a = pong.Q_learning_agent(cs, cr, Q, N_sa, s, a, r)
@@ -140,7 +138,7 @@ def main():
         #print cr, r
         #print cs, s
         #print a
-        if t%100 == 0:
+        if t%500 == 0:
             print Q
         t += 1
 

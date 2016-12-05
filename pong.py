@@ -18,9 +18,9 @@ paddle_height = 0.2
 paddle_x = 1
 ############ below are parameters to tune ######################
 Ne = 10             # the min times the agent has to try each action-state pair
-R_plus = 100        # an optimistic estimate of the best possible reward in any state 
-C = 1               # the constant which dets learning rate alpha = C/(C+N(s,a))
-gamma = 0.5         # discount factor
+R_plus = 50        # an optimistic estimate of the best possible reward in any state 
+C = 0.1              # the constant which dets learning rate alpha = C/(C+N(s,a))
+gamma = 0.8         # discount factor
 
 
 def terminal(s):
@@ -35,12 +35,23 @@ def discretize_s(s):
     sd = [0 for i in range(5)]
     sd[BX] = int(12*s[BX])
     sd[BY] = int(12*s[BY])
-    sd[VX] = int(np.sign(s[VX]))
-    if abs(s[VY]) < 0.015:
-        sd[VY] = 0
+    #sd[VX] = int(np.sign(s[VX]))
+    # modified here
+    if np.sign(s[VX]) < 0:  # map +1, -1 to 0,1
+        sd[VX] = 1
     else:
-        sd[VY] = int(np.sign(s[VY]))
+        sd[VX] = 0
+
+    if abs(s[VY]) < 0.015:  # map +1, 0, -1 to 0,1,2
+        sd[VY] = 0 #sd[VY] = 0
+    elif np.sign(s[VY]) < 0:
+        sd[VY] = 2
+    else:
+        sd[VY] = 1
+
     sd[PY] = int(12*s[PY]/(1-paddle_height))
+    if sd[PY]>=12:
+        sd[PY] = 11
     
     return sd
 
@@ -107,7 +118,7 @@ def Q_learning_agent(cs, cr, Q, N_sa, s, a, r):
 
     dcs = discretize_s(cs)
     cs0, cs1, cs2, cs3, cs4 = dcs
-    print dcs
+    #print dcs
     Q_cs = Q[cs0][cs1][cs2][cs3][cs4]   # an array of action vals resulted from three actions
     N_sa_cs = N_sa[cs0][cs1][cs2][cs3][cs4]  # an array of frequencies resulted from three actions
 
@@ -121,17 +132,21 @@ def Q_learning_agent(cs, cr, Q, N_sa, s, a, r):
     if s != None:
         N_sa[s0][s1][s2][s3][s4][s5] += 1
         #print N_sa
-        max_ca = actions[Q_cs.index(max(Q_cs))] 
-        Q[s0][s1][s2][s3][s4][s5] += alpha*N_sa[s0][s1][s2][s3][s4][s5]*(r + gamma*max_ca - Q[s0][s1][s2][s3][s4][s5])
+        #max_ca = actions[Q_cs.index(max(Q_cs))] 
+        Q[s0][s1][s2][s3][s4][s5] += alpha*N_sa[s0][s1][s2][s3][s4][s5]*(r + gamma*max(Q_cs) - Q[s0][s1][s2][s3][s4][s5])
+
+        # update s 
         for si in range(5):
             s[si] = cs[si]
         explorations = [exploration(Q_cs[i], N_sa_cs[i]) for i in range(3)]
         a = actions[explorations.index(max(explorations))]    # argmax a' f(Q[s',a'], N_sa[s',a'])
-        #r = cr
-    return cr, a
+
+    return cr, a    # return to update r and a
 
 
 if __name__ == '__main__':
+    pass
+"""
     # initialize Q,N_sa values to 0, access by [ball_x][ball_y][v_x][v_y][paddle_y][action], indexes are discretized
     Q = [[[[[[0 for x5 in xrange(3)]for x4 in xrange(12)]for x3 in xrange(3)]for x2 in xrange(2)]for x1 in xrange(12)]for x0 in xrange(12)]
     
@@ -168,3 +183,4 @@ if __name__ == '__main__':
         
 
         t += 1
+"""
