@@ -29,7 +29,7 @@ VY = 3
 PY = 4
 
 C = 59.0               # the constant which dets learning rate alpha = C/(C+N(s,a))
-gamma = 0.9             # discount factor
+gamma = 0.8             # discount factor
 
 #Draws the paddle
 def drawPaddle(paddle):
@@ -79,74 +79,27 @@ def main():
 
 ###################### Uncomment/Change if needed ##########################
     '''load in model, already trained with 100K games with current parameters'''
-    # with open('Q_sa100000_dict.pkl', 'rb') as f:
-    #     Q_sa = pickle.load(f)
-    # with open('N_sa100000_dict.pkl', 'rb') as f:
-    #     N_sa = pickle.load(f)
+    with open('Q_sa100000_dict2.pkl', 'rb') as f:
+        Q_sa = pickle.load(f)
+    with open('N_sa100000_dict2.pkl', 'rb') as f:
+        N_sa = pickle.load(f)
 ###########################################################################
 
-    # number of games want to trained, please use multiple of 1000
-    training_games = 100000
+   # number of games want to trained, please use multiple of 1000
+    test_games = 1000.0
     bounces_sum = 0.0
-    t = 0
-    while game < training_games:
-        if game%1000 == 0:
-            print 'game:', game
-            print 'avg_bounces of last 1000 games:', bounces_sum/1000.0
-            bounces_sum = 0
-
+    while game < test_games:
         current_s = [0.5, 0.5, 0.03, 0.01, 0.4]        # current state 
-
-        # #Initiate variable and set starting positions
-        # ballX = current_s[BX]*WINDOWHEIGHT
-        # ballY = current_s[BY]*WINDOWHEIGHT
-        # paddle_y = current_s[PY]*WINDOWHEIGHT
-
-        # #Creates Rectangles for ball and paddles.
-        # paddle = pygame.Rect(WINDOWWIDTH - LINETHICKNESS, paddle_y, LINETHICKNESS, PADDLESIZE)
-        # ball = (int(ballX), int(ballY))
-        # drawPaddle(paddle)
-        # drawBall(ball)
         
         current_bounces = 0   # number of consecutive on paddle bounces
         game_flag = True #game continues?
         while game_flag:
-            # for event in pygame.event.get():
-            #     if event.type == QUIT:
-            #         pygame.quit()
-            #         sys.exit()
-            #     if event.type == pygame.KEYDOWN:
-            #         if event.key == pygame.K_q:
-            #             with open('Q_sa_dict.pkl', 'wb') as f:
-            #                 pickle.dump(Q_sa,f)
-            #             with open('N_sa_dict.pkl', 'wb') as f:
-            #                 pickle.dump(N_sa,f)
-            #             pygame.quit()
-            #             sys.exit()
-
-            # ballX = current_s[BX]*WINDOWWIDTH
-            # ballY = current_s[BY]*WINDOWHEIGHT
-            # new_PY = current_s[PY]*WINDOWHEIGHT
-
-            # # update positions
-            # paddle = movePaddle(paddle, WINDOWWIDTH - LINETHICKNESS, new_PY)
-            # ball = (int(ballX), int(ballY))
-
-            # drawPaddle(paddle)
-            # drawBall(ball)        
-            # displayInfo(t, max_bounces, game)
-            
-            # pygame.display.update()
-            # FPSCLOCK.tick(FPS)
-            # DISPLAYSURF.fill(BLACK)
-
             #decide action
             action = pong.pick_action(current_s, Q_sa, N_sa)
             # save key for update Q for current state
             current_sa = (pong.discretize_s(current_s), action)
             #try action on current state, find next state
             next_s, current_r = pong.next_state(current_s, action)
-
 
             #next state is terminal state, current_r is -1
             if next_s is None:
@@ -170,17 +123,9 @@ def main():
                 current_bounces += 1
             max_bounces = max(max_bounces, current_bounces)
 
-            # t += 1
-
-    # save the trained model
-    with open('Q_sa_dict.pkl', 'wb') as f:
-        pickle.dump(Q_sa,f)
-    with open('N_sa_dict.pkl', 'wb') as f:
-        pickle.dump(N_sa,f)
-
 
     # average bounces per game of the last 1000 games
-    print 'avg_bounces of last 1000 games:', bounces_sum/1000.0
+    print 'avg_bounces of 1000 games:', bounces_sum/test_games
 
 
 

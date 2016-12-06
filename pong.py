@@ -21,7 +21,7 @@ paddle_x = 1
 Ne = 10             # the min times the agent has to try each action-state pair
 R_plus = 1        # an optimistic estimate of the best possible reward in any state 
 C = 59               # the constant which dets learning rate alpha = C/(C+N(s,a))
-gamma = 0.8         # discount factor
+gamma = 0.9         # discount factor
 
 
 actions = [0, 0.04, -0.04]
@@ -46,7 +46,7 @@ def pick_action(state, Q, N_sa):
     max_Q = -sys.maxint
     for action in actions:
         key = (discretize_s(state), action)
-        if (key not in Q) or (key not in N_sa) or (N_sa[key] < Ne):
+        if (key not in N_sa) or (N_sa[key] < Ne):
             return action
         if Q[key] > max_Q:
             max_Q = Q[key]
